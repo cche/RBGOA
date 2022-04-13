@@ -37,9 +37,11 @@ spec <- matrix(c(
     "goAnnotations", "a", 1, "character",
     "goDatabase", "g", 1, "character",
     "goDivision", "d", 1, "character",
-    "threads", "t", 0, "integer",
+    "largest", "o", 1, "numeric",
+    "smallest", "m", 1, "numeric",
+    "clusterheight", "c", 1, "numeric",
     "pcut", "p", 1, "numeric",
-    "hcut", "c", 1, "numeric"
+    "hcut", "t", 1, "numeric"
 ), byrow = TRUE, ncol = 4)
 opt <- getopt(spec)
 
@@ -71,6 +73,18 @@ if (is.null(opt$goDivision)) {
     cat("'goDivision' is required\n")
     q(status = 1)
 }
+if (is.null(opt$clusterheight)) {
+    cat("'clusterheight' is required\n")
+    q(status = 1)
+}
+if (is.null(opt$largest)) {
+    cat("'largest' is required\n")
+    q(status = 1)
+}
+if (is.null(opt$smallest)) {
+    cat("'smallest' is required\n")
+    q(status = 1)
+}
 if (is.null(opt$pcut)) {
     cat("'pcut' is required\n")
     q(status = 1)
@@ -100,9 +114,9 @@ source_local("gomwu.functions.R")
 
 gomwuStats(opt$input, opt$goDatabase, opt$goAnnotations, opt$goDivision, opt$scriptdir,
 	perlPath = "perl", # replace with full path to perl executable if it is not in your system's PATH already
-	largest = 0.1,  # a GO category will not be considered if it contains more than this fraction of the total number of genes
-	smallest = 5,   # a GO category should contain at least this many genes to be considered
-	clusterCutHeight = 0.25, # threshold for merging similar (gene-sharing) terms. See README for details.
+	largest = opt$largest,  # a GO category will not be considered if it contains more than this fraction of the total number of genes
+	smallest = opt$smallest,  # a GO category should contain at least this many genes to be considered.
+	clusterCutHeight = opt$clusterheight, # threshold for merging similar (gene-sharing) terms. See README for details.
 #	Alternative = "g" # by default the MWU test is two-tailed; specify "g" or "l" of you want to test for "greater" or "less" instead. 
 #	Module = TRUE,Alternative="g" # un-remark this if you are analyzing a SIGNED WGCNA module (values: 0 for not in module genes, kME for in-module genes). In the call to gomwuPlot below, specify absValue=0.001 (count number of "good genes" that fall into the module)
 #	Module = TRUE # un-remark this if you are analyzing an UNSIGNED WGCNA module 

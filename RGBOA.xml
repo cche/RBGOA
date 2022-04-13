@@ -1,4 +1,4 @@
-<tool id="RGBOA" name="Wrapper for GO_MWU" version="0.1.0" python_template_version="3.5">
+<tool id="RBGOA" name="Rank Based Gene Ontology Analysis" version="0.1.0" python_template_version="3.5">
     <requirements>
         <requirement type="package" version="5.6">r-ape</requirement>
         <requirement type="package" version="1.20.3">r-getopt</requirement>
@@ -6,15 +6,24 @@
     <command detect_errors="exit_code"><![CDATA[
         ln -s '${input1}' samples.tsv &&
         ln -s '${input2}' annotation.tsv &&
-        Rscript $__tool_directory__/GO_MWU.R -s $__tool_directory__ -i samples.tsv -a annotation.tsv -g $__tool_directory__/go.obo -d '$input3' -p 1e-2 -c 0.9 &&
+        Rscript $__tool_directory__/GO_MWU.R -s $__tool_directory__ -i samples.tsv -a annotation.tsv -g $__tool_directory__/go.obo -d '$input3' -c '$input_filter.cluster' -o '$input_filter.over' -m '$input_filter.min' -p '$grouping.pcut' -t '$grouping.hcut' &&
         mv ${input3}_samples.tsv div_input.tsv &&
         mv dissim_${input3}_samples.tsv_annotation.tsv dissim.tsv &&
         mv MWU_${input3}_samples.tsv mwu_file.tsv
     ]]></command>
     <inputs>
-        <param type="data" name="input1" format="csv" label="Genes of interest with associated value" />
-        <param type="data" name="input2" format="tab" label="Gene GO annotation file" />
+        <param type="data" name="input1" format="tsv" label="Genes of interest with associated value" />
+        <param type="data" name="input2" format="tsv" label="Gene GO annotation file" />
         <param type="text" name="input3" label="GO division 'BP', 'MF' or 'CC'" />
+        <section name="input_filter" title="Input Filtering" expanded="true">
+            <param type="float" name="over" value="0.1" label="Filter out GO categories that have more than this fraction of total number of genes" />
+            <param type="integer" name="min" value="5" label="Consider GO categories that have at least this many genes" />
+            <param type="float" name="cluster" value="0.25" label="Threshold for merging similar (gene-sharing) terms" />
+        </section>
+        <section name="grouping" title="Significance and Grouping">
+            <param type="float" name="pcut" value="1e-2" label="Adjusted p-value cutoff for representative GO" />
+            <param type="float" name="hcut" value="0.9" label="Height at which to cut the GO terms tree to get 'independent groups'" />
+        </section>
     </inputs>
     <outputs>
         <data name="graph" format="pdf" from_work_dir="Rscript.pdf" label="Tree output" />
@@ -59,15 +68,28 @@
         </test>
     </tests>
     <help><![CDATA[
-        Usage: GO_U.R [
+==========================================================
+Rank-based Gene Ontology Analysis with Adaptive Clustering
+==========================================================
+
+        Usage: GO_MWU.R [
+
         -[-help|h]] 
-        --outfile | -o       <character>
+
+        --scriptdir | -s       <character>
+
         --input | -i         <character>
+                
         --goAnnotations | -a <character>
+
         --goDatabase | -g    <character>
+
         --goDivision | -d    <character>
-        --cores | -s         <integer>
+
+        --threads | -t         <integer>
+
         --pcut | -p          <double>
+
         --hcut | -c          <double>
 
     ]]></help>
