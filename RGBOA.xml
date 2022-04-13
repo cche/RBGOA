@@ -1,0 +1,85 @@
+<tool id="RGBOA" name="Wrapper for GO_MWU" version="0.1.0" python_template_version="3.5">
+    <requirements>
+        <requirement type="package" version="5.6">r-ape</requirement>
+        <requirement type="package" version="1.20.3">r-getopt</requirement>
+    </requirements>
+    <command detect_errors="exit_code"><![CDATA[
+        ln -s '${input1}' samples.tsv &&
+        ln -s '${input2}' annotation.tsv &&
+        Rscript $__tool_directory__/GO_MWU.R -s $__tool_directory__ -i samples.tsv -a annotation.tsv -g $__tool_directory__/go.obo -d '$input3' -p 1e-2 -c 0.9 &&
+        mv ${input3}_samples.tsv div_input.tsv &&
+        mv dissim_${input3}_samples.tsv_annotation.tsv dissim.tsv &&
+        mv MWU_${input3}_samples.tsv mwu_file.tsv
+    ]]></command>
+    <inputs>
+        <param type="data" name="input1" format="csv" label="Genes of interest with associated value" />
+        <param type="data" name="input2" format="tab" label="Gene GO annotation file" />
+        <param type="text" name="input3" label="GO division 'BP', 'MF' or 'CC'" />
+    </inputs>
+    <outputs>
+        <data name="graph" format="pdf" from_work_dir="Rscript.pdf" label="Tree output" />
+        <data name="div_input" format="tabular" from_work_dir="div_input.tsv" label="GO Division ${input3}" />
+        <data name="dissim" format="tabular" from_work_dir="dissim.tsv" label="Dissimilarity table" />
+        <data name="mwu" format="tabular" from_work_dir="mwu_file.tsv" label="Delta rank for GO (${input3})" />
+        <data name="results" format="tabular" from_work_dir="results.tsv" label="Raw data for graph" />
+        <data name="best_go" format="tabular" from_work_dir="best_go.tsv" label="Best GO terms" />
+    </outputs>
+    <tests>
+        <test>
+            <param name="input1" value="heats.csv"/>
+            <param name="input2" value="amil_defog_iso2go.tab"/>
+            <param name="input3" value="BP"/>
+            <output name="graph" ftype="pdf" file="Rscript.pdf" />
+                <!-- <output name="div_input" ftype="tabular" file="div_input.tsv" > -->
+            <output name="div_input">
+                <assert_contents>
+                    <has_n_lines n="25114"/>
+                </assert_contents>
+            </output>
+            <output name="dissim">
+                <assert_contents>
+                    <has_n_lines n="266"/>
+                </assert_contents>
+            </output>
+            <output name="mwu">
+                <assert_contents>
+                    <has_n_lines n="266"/>
+                </assert_contents>
+            </output>
+            <output name="results">
+                <assert_contents>
+                    <has_n_lines n="51"/>
+                </assert_contents>
+            </output>
+            <output name="best_go">
+                <assert_contents>
+                    <has_n_lines n="8"/>
+                </assert_contents>
+            </output>
+        </test>
+    </tests>
+    <help><![CDATA[
+        Usage: GO_U.R [
+        -[-help|h]] 
+        --outfile | -o       <character>
+        --input | -i         <character>
+        --goAnnotations | -a <character>
+        --goDatabase | -g    <character>
+        --goDivision | -d    <character>
+        --cores | -s         <integer>
+        --pcut | -p          <double>
+        --hcut | -c          <double>
+
+    ]]></help>
+    <citations>
+        <citation type="bibtex">
+@misc{githubGO_MWU,
+  author = {LastTODO, FirstTODO},
+  year = {TODO},
+  title = {GO_MWU},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  url = {https://github.com/z0on/GO_MWU},
+}</citation>
+    </citations>
+</tool>
