@@ -26,7 +26,7 @@
         </section>
     </inputs>
     <outputs>
-        <data name="graph" format="pdf" from_work_dir="Rscript.pdf" label="Tree output" />
+        <data name="graph" format="pdf" from_work_dir="Rplots.pdf" label="Tree output" />
         <data name="div_input" format="tabular" from_work_dir="div_input.tsv" label="GO Division ${input3}" />
         <data name="dissim" format="tabular" from_work_dir="dissim.tsv" label="Dissimilarity table" />
         <data name="mwu" format="tabular" from_work_dir="mwu_file.tsv" label="Delta rank for GO (${input3})" />

@@ -127,7 +127,7 @@ gomwuStats(opt$input, opt$goDatabase, opt$goAnnotations, opt$goDivision, opt$scr
 # ----------- Plotting results
 
 # change this to a pdf output
-quartz()
+pdf()
 
 results = gomwuPlot(opt$input,opt$goAnnotations,opt$goDivision,
  	absValue = -log(0.05,10),  # genes with the measure value exceeding this will be counted as "good genes". This setting is for signed log-pvalues. Specify absValue=0.001 if you are doing Fisher's exact test for standard GO enrichment or analyzing a WGCNA module (all non-zero genes = "good genes").
@@ -181,4 +181,4 @@ for (ci in unique(ct)) {
 mwus = read.table(paste("MWU",opt$goDivision,opt$input,sep = "_"),header = T)
 bestGOs <- mwus[mwus$name %in% annots, ]
 write.table(bestGOs, "best_go.tsv", sep = "\t")
-
+dev.off()
