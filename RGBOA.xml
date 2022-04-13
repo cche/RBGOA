@@ -14,7 +14,11 @@
     <inputs>
         <param type="data" name="input1" format="tsv" label="Genes of interest with associated value" />
         <param type="data" name="input2" format="tsv" label="Gene GO annotation file" />
-        <param type="text" name="input3" label="GO division 'BP', 'MF' or 'CC'" />
+        <param type="select" name="input3" label="GO division" >
+            <option value="BP" selected="true">BP</option>
+            <option value="MF">MF</option>
+            <option value="CC">CC</option>
+        </param>
         <section name="input_filter" title="Input Filtering" expanded="true">
             <param type="float" name="over" value="0.1" label="Filter out GO categories that have more than this fraction of total number of genes" />
             <param type="integer" name="min" value="5" label="Consider GO categories that have at least this many genes" />
