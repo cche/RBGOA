@@ -1,8 +1,6 @@
 categories:
 - Ontology Manipulation
 description: Wrapper for GO_MWU R script
-long_description: GO_MWU implements a Rank Based Gene Ontology Anlaysis (RBGOA) for
-  GO term enrichment analysis
 name: rbgoa
 owner: cristian
-remote_repository_url: https://github.com/cche/RBGOA
+remote_repository: https://github.com/cche/RBGOA

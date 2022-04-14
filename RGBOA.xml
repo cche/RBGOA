@@ -1,8 +1,10 @@
-<tool id="RBGOA" name="Rank Based Gene Ontology Analysis" version="0.1.0" python_template_version="3.5">
+<tool id="RBGOA" name="RBGOA" version="0.1.0" python_template_version="3.5">
+  <description>"Rank Based Gene Ontology Analysis"</description>
     <requirements>
         <requirement type="package" version="5.6">r-ape</requirement>
         <requirement type="package" version="1.20.3">r-getopt</requirement>
     </requirements>
+    <version_command>Rscript GO_MWU.R -v</version_command>
     <command detect_errors="exit_code"><![CDATA[
         ln -s '${input1}' samples.tsv &&
         ln -s '${input2}' annotation.tsv &&

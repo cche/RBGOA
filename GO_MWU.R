@@ -52,7 +52,8 @@ spec <- matrix(c(
     "smallest", "m", 1, "numeric",
     "clusterheight", "c", 1, "numeric",
     "pcut", "p", 1, "numeric",
-    "hcut", "t", 1, "numeric"
+    "hcut", "t", 1, "numeric",
+    "version", "v", 0, "character"
 ), byrow = TRUE, ncol = 4)
 opt <- getopt(spec)
 
@@ -60,6 +61,11 @@ opt <- getopt(spec)
 # and exit with a non-zero error code
 if (!is.null(opt$help)) {
     cat(getopt(spec, usage = TRUE))
+    q(status = 1)
+}
+
+if (!is.null(opt$version)) {
+    cat("0.1.0\n")
     q(status = 1)
 }
 
