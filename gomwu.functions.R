@@ -1,6 +1,17 @@
 clusteringGOs=function(gen2go,div,cutHeight) {
-	inname=paste("dissim0_",div,"_",gen2go,sep="")
-	outname=paste("cl_",inname,sep="")
+    nn <- strsplit(gen2go, "[/.]")
+    if (length(nn[[1]]) == 3) {
+        dir <- nn[[1]][1]
+        name <- nn[[1]][2]
+        ext <- nn[[1]][3]
+    } else if (length(nn[[1]]) == 2) {
+        dir <- "."
+        name <- nn[[1]][1]
+        ext <- nn[[1]][2]
+    }
+	inname=paste(dir,"/","dissim0_",div,"_",name,".",ext,sep="")
+
+	outname=paste(dir,"/","cl_dissim0_",div,"_",name,".",ext,sep="")
 	if (!file.exists(outname)) {
 		diss=read.table(inname,sep="\t",header=T,check.names=F)
 		row.names(diss)=names(diss)
@@ -15,6 +26,17 @@ clusteringGOs=function(gen2go,div,cutHeight) {
 #---------------
 gomwuStats=function(input,goDatabase,goAnnotations, goDivision, scriptdir, Module=FALSE, Alternative="t", adjust.multcomp="BH", clusterCutHeight=0.25,largest=0.1,smallest=5,perlPath="perl", shuffle.reps=20){
 
+    nn <- strsplit(input, "[/.]")
+    if (length(nn[[1]]) == 3) {
+        dir <- nn[[1]][1]
+        name <- nn[[1]][2]
+        ext <- nn[[1]][3]
+    } else if (length(nn[[1]]) == 2) {
+        dir <- "."
+        name <- nn[[1]][1]
+        ext <- nn[[1]][2]
+    }
+
 	extraOptions=paste("largest=",largest," smallest=",smallest," cutHeight=",clusterCutHeight,sep="")
 	if (Module==TRUE) { adjust.multcomp="shuffle" }
     gomwu_a = paste(scriptdir, "gomwu_a.pl", sep="/")
@@ -23,7 +45,7 @@ gomwuStats=function(input,goDatabase,goAnnotations, goDivision, scriptdir, Modul
 	clusteringGOs(goAnnotations,goDivision,clusterCutHeight)
 	system(paste(perlPath, gomwu_b,goAnnotations,input,goDivision))
 
-	inname=paste(goDivision,"_",input,sep="")	
+	inname=paste(dir,"/",name,"_",goDivision,".tsv",sep="")	
 	rsq=read.table(inname,sep="\t",header=T)
 	rsq$term=as.factor(rsq$term)
 
@@ -89,7 +111,7 @@ gomwuStats=function(input,goDatabase,goAnnotations, goDivision, scriptdir, Modul
 	 
 	message(sum(fdr<0.1)," GO terms at 10% FDR")
 	rr$p.adj=fdr
-	fname=paste("MWU_",inname,sep="")
+	fname=paste(dir,"/","MWU_",goDivision,"_",name,".",ext,sep="")
 	write.table(rr,fname,row.names=F)
 }
 
@@ -170,14 +192,34 @@ fisherTest=function(gotable) {
 gomwuPlot=function(inFile,goAnnotations,goDivision,level1=0.1,level2=0.05,level3=0.01,absValue=-log(0.05,10),adjusted=TRUE,txtsize=1,font.family="sans",treeHeight=0.5,colors=NULL) {
 	require(ape)
 	
-	input=inFile
-	in.mwu=paste("MWU",goDivision,input,sep="_")
-	in.dissim=paste("dissim",goDivision,input,goAnnotations,sep="_")
+    nn <- strsplit(inFile, "[/.]")
+    if (length(nn[[1]]) == 3) {
+        dir <- nn[[1]][1]
+        name <- nn[[1]][2]
+        ext <- nn[[1]][3]
+    } else if (length(nn[[1]]) == 2) {
+        dir <- "."
+        name <- nn[[1]][1]
+        ext <- nn[[1]][2]
+    }
+    aa <- strsplit(goAnnotations, "[/.]")
+    if (length(aa[[1]]) == 3) {
+        adir <- aa[[1]][1]
+        aname <- aa[[1]][2]
+        aext <- aa[[1]][3]
+    } else if (length(aa[[1]]) == 2) {
+        adir <- "."
+        aname <- aa[[1]][1]
+        aext <- aa[[1]][2]
+    }
+	# input=inFile
+	in.mwu=paste(dir,"/",paste("MWU",goDivision,name,sep="_"), ".", ext,sep="")
+	in.dissim=paste(dir, "/", paste("dissim",goDivision,name,aname,sep="_"), ".", aext, sep="")
 	
 	cutoff=-log(level1,10)
 	pv=read.table(in.mwu,header=T)
 	row.names(pv)=pv$term
-	in.raw=paste(goDivision,input,sep="_")
+	in.raw=paste(dir,"/",paste(name,goDivision,sep="_"), ".tsv", sep="")
 	rsq=read.table(in.raw,sep="\t",header=T)
 	rsq$term=as.factor(rsq$term)
 	

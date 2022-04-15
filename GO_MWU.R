@@ -120,6 +120,17 @@ source_local <- function(fname) {
 
 source_local("gomwu.functions.R")
 
+
+nn <- strsplit(opt$input, "[/.]")
+if (length(nn[[1]]) == 3) {
+    dir <- nn[[1]][1]
+    name <- nn[[1]][2]
+    ext <- nn[[1]][3]
+} else if (length(nn[[1]]) == 2) {
+    dir <- "."
+    name <- nn[[1]][1]
+    ext <- nn[[1]][2]
+}
 # It might take a few minutes for MF and BP. Do not rerun it if you just want
 # to replot the data with different cutoffs, go straight to gomwuPlot. If you
 # change any of the numeric values below, delete the files that were generated
@@ -145,7 +156,7 @@ gomwuStats(opt$input, opt$goDatabase, opt$goAnnotations, opt$goDivision, opt$scr
 # ----------- Plotting results
 
 # change this to a pdf output
-pdf()
+pdf(paste0(dir,"/","Rplots.pdf"))
 
 results <- gomwuPlot(opt$input, opt$goAnnotations, opt$goDivision,
     # genes with the measure value exceeding this will be counted as "good genes".
@@ -168,7 +179,7 @@ results <- gomwuPlot(opt$input, opt$goAnnotations, opt$goDivision,
 # if there are too many categories displayed, try make it more stringent with level1 = 0.05,level2=0.01,level3=0.001.
 
 # text representation of results, with actual adjusted p-values
-write.table(results[[1]], "results.tsv", sep = "\t")
+write.table(results[[1]], paste0(dir, "/", "results.tsv"), sep = "\t")
 
 
 # ------- extracting representative GOs
@@ -212,7 +223,7 @@ for (ci in unique(ct)) {
     }
 }
 
-mwus <- read.table(paste("MWU", opt$goDivision, opt$input, sep = "_"), header = T)
+mwus <- read.table(paste0(dir,"/",paste("MWU", opt$goDivision, name, sep = "_"), ".", ext), header = T)
 best_GOs <- mwus[mwus$name %in% annots, ]
-write.table(best_GOs, "best_go.tsv", sep = "\t")
+write.table(best_GOs, paste0(dir, "/","best_go.tsv"), sep = "\t")
 dev.off()
