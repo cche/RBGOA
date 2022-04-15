@@ -321,7 +321,7 @@ foreach $go (@gos) { push @goodgo, $go unless ($gonego{$go}==1); }
 		}
 	}
 
-	open OUT, ">$inname31" or die "gomwu_b: cannot create output $inname31\n";
+	open OUT, ">$inname31" or die "gomwu_a: cannot create output $inname31\n";
 	
 	print {OUT} join("\t",@gos),"\n";
 

@@ -14,8 +14,8 @@
         mv MWU_${input3}_samples.tsv mwu_file.tsv
     ]]></command>
     <inputs>
-        <param type="data" name="input1" format="tsv" label="Genes of interest with associated value" />
-        <param type="data" name="input2" format="tsv" label="Gene GO annotation file" />
+        <param type="data" name="input1" format="tabular" label="Genes of interest with associated value" />
+        <param type="data" name="input2" format="tabular" label="Gene GO annotation file" />
         <param type="select" name="input3" label="GO division" >
             <option value="BP" selected="true">BP</option>
             <option value="MF">MF</option>
