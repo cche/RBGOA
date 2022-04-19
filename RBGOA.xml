@@ -9,8 +9,8 @@
         ln -s '${input1}' samples.tsv &&
         ln -s '${input2}' annotation.tsv &&
         Rscript $__tool_directory__/GO_MWU.R -s $__tool_directory__ -i samples.tsv -a annotation.tsv -g $__tool_directory__/go.obo -d '$input3' -c '$input_filter.cluster' -o '$input_filter.over' -m '$input_filter.min' -p '$grouping.pcut' -t '$grouping.hcut' &&
-        mv ${input3}_samples.tsv div_input.tsv &&
-        mv dissim_${input3}_samples.tsv_annotation.tsv dissim.tsv &&
+        mv samples_${input3}.tsv div_input.tsv &&
+        mv dissim_${input3}_samples_annotation.tsv dissim.tsv &&
         mv MWU_${input3}_samples.tsv mwu_file.tsv
     ]]></command>
     <inputs>
@@ -44,8 +44,11 @@
             <param name="input1" value="heats.csv"/>
             <param name="input2" value="amil_defog_iso2go.tab"/>
             <param name="input3" value="BP"/>
-            <output name="graph" ftype="pdf" file="Rscript.pdf" />
-                <!-- <output name="div_input" ftype="tabular" file="div_input.tsv" > -->
+            <output name="graph">
+                <assert_contents>
+                    <has_size value="7043" delta="50"/>
+                </assert_contents>
+            </output>
             <output name="div_input">
                 <assert_contents>
                     <has_n_lines n="25114"/>
