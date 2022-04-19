@@ -112,7 +112,7 @@ gomwuStats=function(input,goDatabase,goAnnotations, goDivision, scriptdir, Modul
 	message(sum(fdr<0.1)," GO terms at 10% FDR")
 	rr$p.adj=fdr
 	fname=paste(dir,"/","MWU_",goDivision,"_",name,".",ext,sep="")
-	write.table(rr,fname,row.names=F)
+	write.table(rr,fname,sep = "\t", row.names=F)
 }
 
 #---------------------
