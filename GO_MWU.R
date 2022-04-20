@@ -51,8 +51,12 @@ spec <- matrix(c(
     "largest", "o", 1, "numeric",
     "smallest", "m", 1, "numeric",
     "clusterheight", "c", 1, "numeric",
+    "textsize", "e", 1, "numeric",
     "pcut", "p", 1, "numeric",
     "hcut", "t", 1, "numeric",
+    "l1", "1", 1, "numeric",
+    "l2", "2", 1, "numeric",
+    "l3", "3", 1, "numeric",
     "version", "v", 0, "character"
 ), byrow = TRUE, ncol = 4)
 opt <- getopt(spec)
@@ -65,7 +69,7 @@ if (!is.null(opt$help)) {
 }
 
 if (!is.null(opt$version)) {
-    cat("0.1.0\n")
+    cat("0.3.0\n")
     q(status = 1)
 }
 
@@ -91,25 +95,40 @@ if (is.null(opt$goDivision)) {
     q(status = 1)
 }
 if (is.null(opt$clusterheight)) {
-    cat("'clusterheight' is required\n")
-    q(status = 1)
+    opt$clusterheight = 0.25
+}
+if (is.null(opt$textsize)) {
+    opt$textsize = 1.2
 }
 if (is.null(opt$largest)) {
-    cat("'largest' is required\n")
-    q(status = 1)
+    opt$largest = 0.1
 }
 if (is.null(opt$smallest)) {
-    cat("'smallest' is required\n")
-    q(status = 1)
+    opt$smallest = 5
+}
+if (is.null(opt$l1)) {
+    opt$l1 = 0.1
+}
+if (is.null(opt$l2)) {
+    opt$l2 = 0.05
+}
+if (is.null(opt$l3)) {
+    opt$l3 = 0.01
 }
 if (is.null(opt$pcut)) {
-    cat("'pcut' is required\n")
-    q(status = 1)
+    opt$pcut = 1e-2
 }
 if (is.null(opt$hcut)) {
-    cat("'hcut' is required\n")
-    q(status = 1)
+    opt$hcut = 0.9
 }
+
+# for testing
+# #opt = list()
+# opt$scriptdir = "./"
+# opt$input = "toto/heats.csv"
+# opt$goAnnotations = "toto/amil_defog_iso2go.tab"
+# opt$goDatabase = "go.obo"
+# opt$goDivision = "BP"
 
 source_local <- function(fname) {
     # argv <- commandArgs(trailingOnly = FALSE)
@@ -156,7 +175,8 @@ gomwuStats(opt$input, opt$goDatabase, opt$goAnnotations, opt$goDivision, opt$scr
 # ----------- Plotting results
 
 # change this to a pdf output
-pdf(paste0(dir,"/","Rplots.pdf"))
+pdf(paste0(dir,"/","Rplots.pdf"), width=7, height = 7)
+# png(paste0(dir,"/","Rplots.png"),res=100)
 
 results <- gomwuPlot(opt$input, opt$goAnnotations, opt$goDivision,
     # genes with the measure value exceeding this will be counted as "good genes".
@@ -165,16 +185,17 @@ results <- gomwuPlot(opt$input, opt$goAnnotations, opt$goDivision,
     absValue = -log(0.05, 10),
     # 	absValue = 1, # un-remark this if you are using log2-fold changes
     # FDR threshold for plotting. Specify level1=1 to plot all GO categories containing genes exceeding the absValue.
-    level1 = 0.1,
-    level2 = 0.05, # FDR cutoff to print in regular (not italic) font.
-    level3 = 0.01, # FDR cutoff to print in large bold font.
+    level1 = opt$l1,
+    level2 = opt$l2, # FDR cutoff to print in regular (not italic) font.
+    level3 = opt$l3, # FDR cutoff to print in large bold font.
     # decrease to fit more on one page, or increase (after rescaling the plot so the tree fits the text)
     # for better "word cloud" effect
-    txtsize = 1.2,
+    txtsize = opt$textsize,
     treeHeight = 0.5, # height of the hierarchical clustering tree
     # 	colors = c("dodgerblue2","firebrick1","skyblue2","lightcoral")
     # these are default colors, uncomment and change if needed
 )
+dev.off()
 # manually rescale the plot so the tree matches the text
 # if there are too many categories displayed, try make it more stringent with level1 = 0.05,level2=0.01,level3=0.001.
 
@@ -226,4 +247,3 @@ for (ci in unique(ct)) {
 mwus <- read.table(paste0(dir,"/",paste("MWU", opt$goDivision, name, sep = "_"), ".", ext), header = T)
 best_GOs <- mwus[mwus$name %in% annots, ]
 write.table(best_GOs, paste0(dir, "/","best_go.tsv"), sep = "\t")
-dev.off()

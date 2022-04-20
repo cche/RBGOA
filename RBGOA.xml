@@ -8,7 +8,7 @@
     <command detect_errors="exit_code"><![CDATA[
         ln -s '${input1}' samples.tsv &&
         ln -s '${input2}' annotation.tsv &&
-        Rscript $__tool_directory__/GO_MWU.R -s $__tool_directory__ -i samples.tsv -a annotation.tsv -g $__tool_directory__/go.obo -d '$input3' -c '$input_filter.cluster' -o '$input_filter.over' -m '$input_filter.min' -p '$grouping.pcut' -t '$grouping.hcut' &&
+        Rscript $__tool_directory__/GO_MWU.R -s $__tool_directory__ -i samples.tsv -a annotation.tsv -g $__tool_directory__/go.obo -d '$input3' -c '$input_filter.cluster' -o '$input_filter.over' -m '$input_filter.min' -p '$grouping.pcut' -t '$grouping.hcut' -e '$textsize' --l1 '$graph_output.lev1' --l2 '$graph_output.lev2' --l3 '$graph_output.lev3' &&
         mv samples_${input3}.tsv div_input.tsv &&
         mv dissim_${input3}_samples_annotation.tsv dissim.tsv &&
         mv MWU_${input3}_samples.tsv mwu_file.tsv
@@ -26,10 +26,16 @@
             <param type="integer" name="min" value="5" label="Consider GO categories that have at least this many genes" />
             <param type="float" name="cluster" value="0.25" label="Threshold for merging similar (gene-sharing) terms" />
         </section>
+        <section name="graph_output" title="Graph tweaking" expanded="false">
+            <param type="float" name="lev1" value="0.1" label="Significance level for smallest text" />
+            <param type="float" name="lev2" value="0.05" label="Significance level for intermediate text" />
+            <param type="float" name="lev3" value="0.01" label="Significance level for bigger text" />
+        </section>
         <section name="grouping" title="Significance and Grouping">
             <param type="float" name="pcut" value="1e-2" label="Adjusted p-value cutoff for representative GO" />
             <param type="float" name="hcut" value="0.9" label="Height at which to cut the GO terms tree to get 'independent groups'" />
         </section>
+        <param type="float" name="textsize" value="1.2" label="TextSize for graph output" />
     </inputs>
     <outputs>
         <data name="graph" format="pdf" from_work_dir="Rplots.pdf" label="Tree output" />

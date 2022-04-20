@@ -279,13 +279,16 @@ gomwuPlot=function(inFile,goAnnotations,goDivision,level1=0.1,level2=0.05,level3
 
     par(mar = c(2,2,0.85,0))
 	plot(as.phylo(cl.goods),show.tip.label=FALSE,cex=0.0000001)
-	step=100
-	left=1
-	top=step*(2+length(labs))
 
-    par(mar = c(0,0,0.3,0))
-	plot(c(1:top)~c(1:top),type="n",axes=F,xlab="",ylab="")
-	ii=1
+    par(mar = c(2,0,1,0))
+	step=dev.size("px")[2]/(length(goods.names)-1)
+	left=1
+	top=step*(length(labs)-1)
+    # print(paste("Size:", dev.size("px")))
+    # print(paste("Good:", length(goods.names), "Step:", step, "Top:", top))
+
+	plot(c(1:top),c(1:top),type="n",axes=F,xlab="",ylab="")
+	ii=0
 	goods$color=1
 	goods$color[goods$direction==1 & goods$pval>cutoff]=colors[4]
 	goods$color[goods$direction==0 & goods$pval>cutoff]=colors[3]
@@ -294,7 +297,8 @@ gomwuPlot=function(inFile,goAnnotations,goDivision,level1=0.1,level2=0.05,level3
 	goods$color[goods$direction==1 & goods$pval>(-log(level3,10))]=colors[2]
 	goods$color[goods$direction==0 & goods$pval>(-log(level3,10))]=colors[1]
 	for (i in length(labs):1) {
-		ypos=top-step*ii
+		ypos=round(top-step*ii)
+        # print(paste("Ypos:", ypos))
 		ii=ii+1
 		if (goods$pval[i]> -log(level3,10)) { 
 			text(left,ypos,labs[i],font=2,cex=1*txtsize,col=goods$color[i],adj=c(0,0),family=font.family) 
@@ -313,7 +317,7 @@ gomwuPlot=function(inFile,goAnnotations,goDivision,level1=0.1,level2=0.05,level3
 	
     par(mar = c(3,1,1,0))
 	
-	plot(c(1:top)~c(1:top),type="n",axes=F,xlab="",ylab="")
+	plot(c(1:top),c(1:top),type="n",axes=F,xlab="",ylab="")
 	text(left,top-step*2,paste("p < ",level3,sep=""),font=2,cex=1* txtsize,adj=c(0,0),family=font.family)
 	text(left,top-step*3,paste("p < ",level2,sep=""),font=1,cex=0.8* txtsize,adj=c(0,0),family=font.family)
 	text(left,top-step*4,paste("p < ",10^(-cutoff),sep=""),font=3,col="grey50",cex=0.8* txtsize,adj=c(0,0),family=font.family)
