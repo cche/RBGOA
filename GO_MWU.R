@@ -246,4 +246,4 @@ for (ci in unique(ct)) {
 
 mwus <- read.table(paste0(dir, "/", paste("MWU", opt$goDivision, name, sep = "_"), ".", ext), header = T)
 best_GOs <- mwus[mwus$name %in% annots, ]
-write.table(best_GOs, paste0(dir, "/", "best_go.tsv"), sep = "\t")
+write.table(best_GOs, paste0(dir, "/", "best_go.tsv"), sep = "\t", row.names = FALSE)
