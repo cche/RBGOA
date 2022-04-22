@@ -8,7 +8,7 @@
     <command detect_errors="exit_code"><![CDATA[
         ln -s '${input1}' samples.tsv &&
         ln -s '${input2}' annotation.tsv &&
-        Rscript $__tool_directory__/GO_MWU.R -s $__tool_directory__ -i samples.tsv -a annotation.tsv -g $__tool_directory__/go.obo -d '$input3' -c '$input_filter.cluster' -o '$input_filter.over' -m '$input_filter.min' -p '$grouping.pcut' -t '$grouping.hcut' -e '$textsize' --l1 '$graph_output.lev1' --l2 '$graph_output.lev2' --l3 '$graph_output.lev3' &&
+        Rscript $__tool_directory__/GO_MWU.R -s $__tool_directory__ -i samples.tsv -a annotation.tsv -g $__tool_directory__/go.obo -d '$input3' -c '$input_filter.cluster' -o '$input_filter.over' -m '$input_filter.min' -p '$grouping.pcut' -t '$grouping.hcut' -e '$textsize' --l1 '$plot_output.lev1' --l2 '$plot_output.lev2' --l3 '$plot_output.lev3' &&
         mv samples_${input3}.tsv div_input.tsv &&
         mv dissim_${input3}_samples_annotation.tsv dissim.tsv &&
         mv MWU_${input3}_samples.tsv mwu_file.tsv
@@ -26,23 +26,23 @@
             <param type="integer" name="min" value="5" label="Consider GO categories that have at least this many genes" />
             <param type="float" name="cluster" value="0.25" label="Threshold for merging similar (gene-sharing) terms" />
         </section>
-        <section name="graph_output" title="Graph tweaking" expanded="false">
+        <section name="plot_output" title="Plot tweaking" expanded="false">
             <param type="float" name="lev1" value="0.1" label="Significance level for smallest text" />
             <param type="float" name="lev2" value="0.05" label="Significance level for intermediate text" />
-            <param type="float" name="lev3" value="0.01" label="Significance level for bigger text" />
+            <param type="float" name="lev3" value="0.01" label="Significance level for largest text" />
         </section>
         <section name="grouping" title="Significance and Grouping">
             <param type="float" name="pcut" value="1e-2" label="Adjusted p-value cutoff for representative GO" />
             <param type="float" name="hcut" value="0.9" label="Height at which to cut the GO terms tree to get 'independent groups'" />
         </section>
-        <param type="float" name="textsize" value="1.2" label="TextSize for graph output" />
+        <param type="float" name="textsize" value="1.2" label="TextSize for plot labels" />
     </inputs>
     <outputs>
-        <data name="graph" format="pdf" from_work_dir="Rplots.pdf" label="Tree output" />
-        <data name="div_input" format="tabular" from_work_dir="div_input.tsv" label="GO Division ${input3}" />
-        <data name="dissim" format="tabular" from_work_dir="dissim.tsv" label="Dissimilarity table" />
-        <data name="mwu" format="tabular" from_work_dir="mwu_file.tsv" label="Delta rank for GO (${input3})" />
-        <data name="results" format="tabular" from_work_dir="results.tsv" label="Raw data for graph" />
+        <data name="graph" format="pdf" from_work_dir="Rplots.pdf" label="Plot of GO terms for (${input3})" />
+        <data name="div_input" format="tabular" from_work_dir="div_input.tsv" label="Augmented ${input3} GO terms for genes" />
+        <data name="dissim" format="tabular" from_work_dir="dissim.tsv" label="Dissimilarity matrix of GO terms" />
+        <data name="mwu" format="tabular" from_work_dir="mwu_file.tsv" label="MWU test result for (${input3})" />
+        <data name="results" format="tabular" from_work_dir="results.tsv" label="Raw data for plot" />
         <data name="best_go" format="tabular" from_work_dir="best_go.tsv" label="Best GO terms" />
     </outputs>
     <tests>
@@ -87,32 +87,92 @@
 Rank-based Gene Ontology Analysis with Adaptive Clustering
 ==========================================================
 
-        Usage: GO_MWU.R [
+What it does
+------------
 
-        -[-help|h]] 
+In contrast to most other "GO enrichment analysis" methods (e.g., GeneMerge or DAVID), this one does not look for GO categories enriched among "significant" genes.
 
-        --scriptdir | -s       <character>
+Instead, it measures whether each GO category is significantly enriched by either up or down-regulated genes.
+Basically, the method tests whether the genes belonging to a certain GO category are significantly bunched up near the top or the bottom of the global ranked list of genes, instead of being spread evenly all over it.
+The test used is called the Mann-Whitney U (MWU) test.
 
-        --input | -i         <character>
-                
-        --goAnnotations | -a <character>
+The major advantage of this approach is that the experimenter does not have to impose an arbitrary threshold for initial selection of "significant genes", and thus the whole dataset can be used to gain information.
 
-        --goDatabase | -g    <character>
+In fact, no preliminary statistical test is required prior to the analysis; the method is best suited to analyze the distribution of raw measures, such as dN/dS values, log-fold-changes of gene expression, or kME (correlation) values from WGCNA (Not implemented in this Galaxy wrapper).
 
-        --goDivision | -d    <character>
+The method can also be run in a traditional mode, looking for GO categories significantly over-represented among "significant genes" (based on Fisher's exact test). To make the method work in this mode, the measure of significance should be binary (1 or 0, i.e., significant or not).
 
-        --threads | -t         <integer>
+The method automatically retrieves all the missing parental terms for the lower-level GO categories. 
+Then, fully redundant GO categories (i.e., containing exactly the same genes) are collapsed under name of the lower-level (more specific) term.
+Then, highly similar categories are merged according to complete linkage clustering based on the fraction of shared genes.
+The distance measure for clustering, introduced in Kosiol et al 2008, is the number of genes shared among the two GO categories within the analyzed dataset divided by the size of the smaller of the two categories.
+The resulting hierarchical tree is then “cut” at the adjustable “height” ('Threshold for merging similar (gene-sharing) terms' parameter) to merge clustered categories.
+The default for this parameter is 0.25, implying that a group of categories will be merged if the most dissimilar two of them share >75% of genes included in the smaller of the two.
+The merged categories inherit the name of the largest one.
+This simplifies the GO hierarchy, generates biologically meaningful groups of categories tailored for the particular dataset, and improves the multiple testing situation.
 
-        --pcut | -p          <double>
+In the final plot, the method shows hierarchical clustering of GO categories based on the number of genes shared between them, to indicate which categories might be significant because of the same genes.
 
-        --hcut | -c          <double>
+------
+
+Output Files
+------------
+
+The plot
+^^^^^^^^
+
+The plot consists of three parts:
+
+|        - Hierarchical clustering tree of significant GO categories based on shared genes in the current dataset.
+        Categories with no branch length between them are subsets of each other and their significance is most likely driven by the same genes.
+
+|        - Category names, plotted in different colors and fonts.
+        Fonts indicate the level of statistical significance, colors indicate enrichment of GO categories with either up- (red) or down- (blue) regulated genes.
+        The category names are preceded by the fraction indicating the number of "good candidates" relative to the total number of genes belonging to this category.
+        The "good candidates" are the genes exceeding an arbitrary 'absValue' cutoff in their significance measure.
+        Adjust 'absValue' parameter according to what your measure is.
+        By default it is set to -log(0.05,10), assuming that the measure is a signed log p-value (so, the "good candidates" would be the ones with raw p-value < 0.05).
+        Ideally we would like to see more than one such gene per displayed GO category.
+        With 'level1=1' the script will display all the categories containing "good candidates", which is a good way to summarize the whole GO content of the experiment.
+        Note that 'absValue' parameter does not affect statistics and serves just the illustrative purpose.
+        In the Fisher-test mode (binary significance measure) and signed WGCNA module analysis the colors are not used; in that case specify absValue=0.001 to make the script display the fraction of genes with non-zero measure within a GO category.
+
+|        - The legend giving the correspondence of the fonts to significance thresholds.
+        The method corrects the p-values using Benjamini-Hochberg false discovery rate procedure except when analyzing WGCNA modules; in that case the false discovery rate is determined from ten permutations where significance measures are randomly shuffled among genes.
+        To set different thresholds for plotting, change parameters 'Significance level for smaller text', 'Significance level for intermediate text' and 'Significance level for largest text' in the 'Plot tweaking' section.
+
+In addition, the script prints out the number of GO categories displayed and the fraction of "good candidates" that these categories account for. This is useful to evaluate whether the generated GO summary really accounts for a substantial portion of what was going on.
+
+If the labels of the plot are too crowded or too small, you can adjust the 'TextSize for plot labels' parameter and relaunch the analysis.
+
+The tables
+^^^^^^^^^^
+
+The script generates 5 tables.
+
+Augmented GO terms for genes
+   main data table containing reformatted and augmented GO terms for each gene (in addition to the originally listed terms, the script finds all their parental terms if any were missing), and measures of interest.
+
+Dissimilarity table
+   dissimilarity matrix of GO categories based on the number of genes shared between them in the dataset.
+
+MWU Test
+   The results of MWU test.
+
+The raw data for plot
+    The raw data represented in the plot.
+
+Best GO terms
+    GO terms that best represent *independent* groups of significant GO terms.
+
 
     ]]></help>
     <citations>
+        <citation type="doi">10.1186/s12864-015-1540-2</citation>
         <citation type="bibtex">
 @misc{githubGO_MWU,
-  author = {LastTODO, FirstTODO},
-  year = {TODO},
+  author = {Matz, Mikhail},
+  year = {2021},
   title = {GO_MWU},
   publisher = {GitHub},
   journal = {GitHub repository},
