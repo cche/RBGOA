@@ -95,31 +95,31 @@ if (is.null(opt$goDivision)) {
     q(status = 1)
 }
 if (is.null(opt$clusterheight)) {
-    opt$clusterheight = 0.25
+    opt$clusterheight <- 0.25
 }
 if (is.null(opt$textsize)) {
-    opt$textsize = 1.2
+    opt$textsize <- 1.2
 }
 if (is.null(opt$largest)) {
-    opt$largest = 0.1
+    opt$largest <- 0.1
 }
 if (is.null(opt$smallest)) {
-    opt$smallest = 5
+    opt$smallest <- 5
 }
 if (is.null(opt$l1)) {
-    opt$l1 = 0.1
+    opt$l1 <- 0.1
 }
 if (is.null(opt$l2)) {
-    opt$l2 = 0.05
+    opt$l2 <- 0.05
 }
 if (is.null(opt$l3)) {
-    opt$l3 = 0.01
+    opt$l3 <- 0.01
 }
 if (is.null(opt$pcut)) {
-    opt$pcut = 1e-2
+    opt$pcut <- 1e-2
 }
 if (is.null(opt$hcut)) {
-    opt$hcut = 0.9
+    opt$hcut <- 0.9
 }
 
 # for testing
@@ -175,7 +175,7 @@ gomwuStats(opt$input, opt$goDatabase, opt$goAnnotations, opt$goDivision, opt$scr
 # ----------- Plotting results
 
 # change this to a pdf output
-pdf(paste0(dir,"/","Rplots.pdf"), width=7, height = 7)
+pdf(paste0(dir, "/", "Rplots.pdf"), width = 7, height = 7)
 # png(paste0(dir,"/","Rplots.png"),res=100)
 
 results <- gomwuPlot(opt$input, opt$goAnnotations, opt$goDivision,
@@ -244,6 +244,6 @@ for (ci in unique(ct)) {
     }
 }
 
-mwus <- read.table(paste0(dir,"/",paste("MWU", opt$goDivision, name, sep = "_"), ".", ext), header = T)
+mwus <- read.table(paste0(dir, "/", paste("MWU", opt$goDivision, name, sep = "_"), ".", ext), header = T)
 best_GOs <- mwus[mwus$name %in% annots, ]
-write.table(best_GOs, paste0(dir, "/","best_go.tsv"), sep = "\t")
+write.table(best_GOs, paste0(dir, "/", "best_go.tsv"), sep = "\t")
