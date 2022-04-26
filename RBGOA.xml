@@ -1,4 +1,4 @@
-<tool id="RBGOA" name="RBGOA" version="0.2.0" python_template_version="3.5">
+<tool id="RBGOA" name="RBGOA" version="0.3.0" python_template_version="3.5">
   <description>"Rank Based Gene Ontology Analysis"</description>
     <requirements>
         <requirement type="package" version="5.6">r-ape</requirement>
@@ -15,14 +15,14 @@
     ]]></command>
     <inputs>
         <param type="data" name="input1" format="tabular" label="Genes of interest with associated value" />
-        <param type="data" name="input2" format="tabular" label="Gene GO annotation file" />
+        <param type="data" name="input2" format="tabular" label="Gene-GO annotation file" />
         <param type="select" name="input3" label="GO division" >
             <option value="BP" selected="true">BP</option>
             <option value="MF">MF</option>
             <option value="CC">CC</option>
         </param>
         <section name="input_filter" title="Input Filtering" expanded="true">
-            <param type="float" name="over" value="0.1" label="Filter out GO categories that have more than this fraction of total number of genes" />
+            <param type="float" name="over" value="0.1" label="Filter out GO categories that include more than this fraction of the total number of genes" />
             <param type="integer" name="min" value="5" label="Consider GO categories that have at least this many genes" />
             <param type="float" name="cluster" value="0.25" label="Threshold for merging similar (gene-sharing) terms" />
         </section>
