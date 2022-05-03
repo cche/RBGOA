@@ -37,13 +37,22 @@ loc <- Sys.setlocale("LC_MESSAGES", "en_US.UTF-8")
 library("getopt")
 library("tools")
 options(stringAsFactors = FALSE, useFancyQuotes = FALSE)
+
+getScriptPath <- function() {
+    cmd.args <- commandArgs()
+    m <- regexpr("(?<=^--file=).+", cmd.args, perl = TRUE)
+    script.dir <- dirname(regmatches(cmd.args, m))
+    if (length(script.dir) == 0) stop("can't determine script dir: please call the script with Rscript")
+    if (length(script.dir) > 1) stop("can't determine script dir: more than one '--file' argument detected")
+    return(script.dir)
+}
+
 args <- commandArgs(trailingOnly = TRUE)
 
 # get options, using the spec as defined by the enclosed list.
 # we read the options from the default: commandArgs(TRUE).
 spec <- matrix(c(
     "help", "h", 0, "logical",
-    "scriptdir", "s", 1, "character",
     "input", "i", 1, "character",
     "goAnnotations", "a", 1, "character",
     "goDatabase", "g", 1, "character",
@@ -73,11 +82,9 @@ if (!is.null(opt$version)) {
     q(status = 1)
 }
 
+scriptdir <- getScriptPath()
+
 # enforce the following required arguments
-if (is.null(opt$scriptdir)) {
-    cat("'scriptdir' is required\n")
-    q(status = 1)
-}
 if (is.null(opt$input)) {
     cat("'input' is required\n")
     q(status = 1)
@@ -124,7 +131,6 @@ if (is.null(opt$hcut)) {
 
 # for testing
 # #opt = list()
-# opt$scriptdir = "./"
 # opt$input = "toto/heats.csv"
 # opt$goAnnotations = "toto/amil_defog_iso2go.tab"
 # opt$goDatabase = "go.obo"
@@ -133,7 +139,7 @@ if (is.null(opt$hcut)) {
 source_local <- function(fname) {
     # argv <- commandArgs(trailingOnly = FALSE)
     # base_dir <- dirname(substring(argv[grep("--file = ", argv)], 8))
-    base_dir <- opt$scriptdir
+    base_dir <- scriptdir
     source(paste(base_dir, fname, sep = "/"))
 }
 
@@ -155,7 +161,7 @@ if (length(nn[[1]]) == 3) {
 # change any of the numeric values below, delete the files that were generated
 # in previos runs first.
 
-gomwuStats(opt$input, opt$goDatabase, opt$goAnnotations, opt$goDivision, opt$scriptdir,
+gomwuStats(opt$input, opt$goDatabase, opt$goAnnotations, opt$goDivision, scriptdir,
     # replace with full path to perl executable if it is not in your system's PATH already
     perlPath = "perl",
     # a GO category will not be considered if it contains more than this fraction of the total number of genes
