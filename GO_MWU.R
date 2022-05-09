@@ -85,16 +85,20 @@ if (!is.null(opt$version)) {
 
 scriptdir <- getScriptPath()
 
-# Uncomment this block and change the values if running in Rstudio
-# #opt = list()
+### if running in Rstudio ###
+# Uncomment this block, change the values and run from here.
+# opt = list()
 # opt$input = "heats.csv"
 # opt$goAnnotations = "amil_defog_iso2go.tab"
 # opt$goDatabase = "go.obo"
 # opt$goDivision = "BP"
+
+### Optionally uncomment the options below that you want to change and change the default value.
 # opt$clusterheight <- 0.25
 # opt$textsize <- 1.2
 # opt$largest <- 0.1
 # opt$smallest <- 5
+# opt$absValue <- -log(0.05,10)
 # opt$l1 <- 0.1
 # opt$l2 <- 0.05
 # opt$l3 <- 0.01
