@@ -59,6 +59,7 @@ spec <- matrix(c(
     "goDivision", "d", 1, "character",
     "largest", "o", 1, "numeric",
     "smallest", "m", 1, "numeric",
+    "absValue", "k", 1, "numeric",
     "clusterheight", "c", 1, "numeric",
     "textsize", "e", 1, "numeric",
     "pcut", "p", 1, "numeric",
@@ -83,6 +84,23 @@ if (!is.null(opt$version)) {
 }
 
 scriptdir <- getScriptPath()
+
+# Uncomment this block and change the values if running in Rstudio
+# #opt = list()
+# opt$input = "heats.csv"
+# opt$goAnnotations = "amil_defog_iso2go.tab"
+# opt$goDatabase = "go.obo"
+# opt$goDivision = "BP"
+# opt$clusterheight <- 0.25
+# opt$textsize <- 1.2
+# opt$largest <- 0.1
+# opt$smallest <- 5
+# opt$l1 <- 0.1
+# opt$l2 <- 0.05
+# opt$l3 <- 0.01
+# opt$pcut <- 1e-2
+# opt$hcut <- 0.9
+
 
 # enforce the following required arguments
 if (is.null(opt$input)) {
@@ -113,6 +131,9 @@ if (is.null(opt$largest)) {
 if (is.null(opt$smallest)) {
     opt$smallest <- 5
 }
+if (is.null(opt$absValue)) {
+    opt$absValue <- -log(0.05, 10)
+}
 if (is.null(opt$l1)) {
     opt$l1 <- 0.1
 }
@@ -128,13 +149,6 @@ if (is.null(opt$pcut)) {
 if (is.null(opt$hcut)) {
     opt$hcut <- 0.9
 }
-
-# for testing
-# #opt = list()
-# opt$input = "toto/heats.csv"
-# opt$goAnnotations = "toto/amil_defog_iso2go.tab"
-# opt$goDatabase = "go.obo"
-# opt$goDivision = "BP"
 
 source_local <- function(fname) {
     # argv <- commandArgs(trailingOnly = FALSE)
@@ -188,7 +202,7 @@ results <- gomwuPlot(opt$input, opt$goAnnotations, opt$goDivision,
     # genes with the measure value exceeding this will be counted as "good genes".
     # This setting is for signed log-pvalues. Specify absValue=0.001 if you are doing
     # Fisher's exact test for standard GO enrichment or analyzing a WGCNA module (all non-zero genes = "good genes").
-    absValue = -log(0.05, 10),
+    absValue = opt$absValue,
     # 	absValue = 1, # un-remark this if you are using log2-fold changes
     # FDR threshold for plotting. Specify level1=1 to plot all GO categories containing genes exceeding the absValue.
     level1 = opt$l1,

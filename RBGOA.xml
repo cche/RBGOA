@@ -8,7 +8,7 @@
     <command detect_errors="exit_code"><![CDATA[
         ln -s '${input1}' samples.tsv &&
         ln -s '${input2}' annotation.tsv &&
-        Rscript $__tool_directory__/GO_MWU.R -s $__tool_directory__ -i samples.tsv -a annotation.tsv -g $__tool_directory__/go.obo -d '$input3' -c '$input_filter.cluster' -o '$input_filter.over' -m '$input_filter.min' -p '$grouping.pcut' -t '$grouping.hcut' -e '$textsize' --l1 '$plot_output.lev1' --l2 '$plot_output.lev2' --l3 '$plot_output.lev3' &&
+        Rscript $__tool_directory__/GO_MWU.R -i samples.tsv -a annotation.tsv -g $__tool_directory__/go.obo -d '$input3' -c '$input_filter.cluster' -o '$input_filter.over' -m '$input_filter.min' -k '$grouping.absval' -p '$grouping.pcut' -t '$grouping.hcut' -e '$textsize' --l1 '$plot_output.lev1' --l2 '$plot_output.lev2' --l3 '$plot_output.lev3' &&
         mv samples_${input3}.tsv div_input.tsv &&
         mv dissim_${input3}_samples_annotation.tsv dissim.tsv &&
         mv MWU_${input3}_samples.tsv mwu_file.tsv
@@ -27,9 +27,10 @@
             <param type="float" name="cluster" value="0.25" label="Threshold for merging similar (gene-sharing) terms" />
         </section>
         <section name="plot_output" title="Plot tweaking" expanded="false">
-            <param type="float" name="lev1" value="0.1" label="Significance level for smallest text" />
-            <param type="float" name="lev2" value="0.05" label="Significance level for intermediate text" />
-            <param type="float" name="lev3" value="0.01" label="Significance level for largest text" />
+            <param type="float" name="absval" value="1.30103" label="absValue" help="Threshold for 'good genes'. Default: -log(0.05, 10)=1.30103 used with signed log(p-value), Read help below!" />
+            <param type="float" name="lev1" value="0.1" label="Level 1" help="Significance level for smallest text" />
+            <param type="float" name="lev2" value="0.05" label="Level 2" help="Significance level for intermediate text" />
+            <param type="float" name="lev3" value="0.01" label="Level 3" help="Significance level for largest text" />
         </section>
         <section name="grouping" title="Significance and Grouping">
             <param type="float" name="pcut" value="1e-2" label="Adjusted p-value cutoff for representative GO" />
@@ -102,6 +103,12 @@ In fact, no preliminary statistical test is required prior to the analysis; the 
 
 The method can also be run in a traditional mode, looking for GO categories significantly over-represented among "significant genes" (based on Fisher's exact test). To make the method work in this mode, the measure of significance should be binary (1 or 0, i.e., significant or not).
 
+"absValue": Genes with the measure value exceeding this value will be counted as "good genes".
+The default value -log(0.05, 10) is for signed log(p-values). Specify the value 0.001 if you are doing
+Fisher's exact test for standard GO enrichment or analyzing a WGCNA module (all non-zero genes = "good genes").
+Use a value of 1 if you're using log2(fold-change).
+This parameter does not affect statistics and serves just the illustrative purpose.
+
 The method automatically retrieves all the missing parental terms for the lower-level GO categories. 
 Then, fully redundant GO categories (i.e., containing exactly the same genes) are collapsed under name of the lower-level (more specific) term.
 Then, highly similar categories are merged according to complete linkage clustering based on the fraction of shared genes.
@@ -139,7 +146,7 @@ The plot consists of three parts:
 
 |        - The legend giving the correspondence of the fonts to significance thresholds.
         The method corrects the p-values using Benjamini-Hochberg false discovery rate procedure except when analyzing WGCNA modules; in that case the false discovery rate is determined from ten permutations where significance measures are randomly shuffled among genes.
-        To set different thresholds for plotting, change parameters 'Significance level for smaller text', 'Significance level for intermediate text' and 'Significance level for largest text' in the 'Plot tweaking' section.
+        To set different thresholds for plotting, change parameters 'Level 1', 'Level 2' and 'Level 3' in the 'Plot tweaking' section.
 
 In addition, the script prints out the number of GO categories displayed and the fraction of "good candidates" that these categories account for. This is useful to evaluate whether the generated GO summary really accounts for a substantial portion of what was going on.
 
