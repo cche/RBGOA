@@ -1,5 +1,5 @@
 <tool id="RBGOA" name="RBGOA" version="0.3.0" python_template_version="3.5">
-  <description>"Rank Based Gene Ontology Analysis"</description>
+  <description>"GO_MWU: a Rank Based Gene Ontology Analysis"</description>
     <requirements>
         <requirement type="package" version="5.6">r-ape</requirement>
         <requirement type="package" version="1.20.3">r-getopt</requirement>
