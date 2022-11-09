@@ -27,7 +27,7 @@
             <param type="float" name="cluster" value="0.25" label="Threshold for merging similar (gene-sharing) terms" />
         </section>
         <section name="plot_output" title="Plot tweaking" expanded="true">
-            <param type="float" name="absval" value="1.0" label="absValue" help="Threshold for 'good genes'. Default: 1 when used with log2(foldchange). Read help below!" />
+            <param type="float" name="absval" value="1.0" label="absValue" help="Threshold for 'good genes'. Default: 1, to use with log2(foldchange). Read help below!" />
             <param type="float" name="lev1" value="0.1" label="Level 1" help="Significance level for smallest text" />
             <param type="float" name="lev2" value="0.05" label="Level 2" help="Significance level for intermediate text" />
             <param type="float" name="lev3" value="0.01" label="Level 3" help="Significance level for largest text" />
