@@ -27,7 +27,7 @@
             <param type="float" name="cluster" value="0.25" label="Threshold for merging similar (gene-sharing) terms" />
         </section>
         <section name="plot_output" title="Plot tweaking" expanded="true">
-            <param type="float" name="absval" value="1.30103" label="absValue" help="Threshold for 'good genes'. Default: -log(0.05, 10)=1.30103 used with signed log(p-value), Read help below!" />
+            <param type="float" name="absval" value="1.0" label="absValue" help="Threshold for 'good genes'. Default: 1 when used with log2(foldchange). Read help below!" />
             <param type="float" name="lev1" value="0.1" label="Level 1" help="Significance level for smallest text" />
             <param type="float" name="lev2" value="0.05" label="Level 2" help="Significance level for intermediate text" />
             <param type="float" name="lev3" value="0.01" label="Level 3" help="Significance level for largest text" />
@@ -104,7 +104,7 @@ In fact, no preliminary statistical test is required prior to the analysis; the 
 The method can also be run in a traditional mode, looking for GO categories significantly over-represented among "significant genes" (based on Fisher's exact test). To make the method work in this mode, the measure of significance should be binary (1 or 0, i.e., significant or not).
 
 **"absValue"**: Genes with the measure value exceeding this value will be counted as "good genes".
-The default value -log(0.05, 10) is for signed log(p-values). Specify the value 0.001 if you are doing
+When using signed log(p-values) use the value 1.30103 which corresponds to -log(0.05, 10). Specify the value 0.001 if you are doing
 Fisher's exact test for standard GO enrichment or analyzing a WGCNA module (all non-zero genes = "good genes").
 Use a value of 1 if you're using log2(fold-change).
 This parameter does not affect statistics and serves just the illustrative purpose.
@@ -113,6 +113,7 @@ The method automatically retrieves all the missing parental terms for the lower-
 Then, fully redundant GO categories (i.e., containing exactly the same genes) are collapsed under name of the lower-level (more specific) term.
 Then, highly similar categories are merged according to complete linkage clustering based on the fraction of shared genes.
 The distance measure for clustering, introduced in Kosiol et al 2008, is the number of genes shared among the two GO categories within the analyzed dataset divided by the size of the smaller of the two categories.
+
 The resulting hierarchical tree is then “cut” at the adjustable “height” ('Threshold for merging similar (gene-sharing) terms' parameter) to merge clustered categories.
 The default for this parameter is 0.25, implying that a group of categories will be merged if the most dissimilar two of them share >75% of genes included in the smaller of the two.
 The merged categories inherit the name of the largest one.
