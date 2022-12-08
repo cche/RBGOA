@@ -26,9 +26,9 @@
 
 
 # setup R error handling to go to stderr
-options(show.error.messages = F, error = function() {
+options(show.error.messages = FALSE, error = function() {
     cat(geterrmessage(), file = stderr())
-    q("no", 1, F)
+    q("no", 1, FALSE)
 })
 
 # we need that to not crash galaxy with an UTF8 error on German LC settings.
@@ -36,6 +36,7 @@ loc <- Sys.setlocale("LC_MESSAGES", "en_US.UTF-8")
 
 library("getopt")
 library("tools")
+library(argparser, quietly = TRUE)
 options(stringAsFactors = FALSE, useFancyQuotes = FALSE)
 
 getScriptPath <- function() {
@@ -47,38 +48,41 @@ getScriptPath <- function() {
     return(script.dir)
 }
 
-args <- commandArgs(trailingOnly = TRUE)
+# Create a parser
+p <- arg_parser("Perform a GO_MWU analysis")
 
-# get options, using the spec as defined by the enclosed list.
-# we read the options from the default: commandArgs(TRUE).
-spec <- matrix(c(
-    "help", "h", 0, "logical",
-    "input", "i", 1, "character",
-    "goAnnotations", "a", 1, "character",
-    "goDatabase", "g", 1, "character",
-    "goDivision", "d", 1, "character",
-    "largest", "o", 1, "numeric",
-    "smallest", "m", 1, "numeric",
-    "absValue", "k", 1, "numeric",
-    "clusterheight", "c", 1, "numeric",
-    "textsize", "e", 1, "numeric",
-    "pcut", "p", 1, "numeric",
-    "hcut", "t", 1, "numeric",
-    "l1", "1", 1, "numeric",
-    "l2", "2", 1, "numeric",
-    "l3", "3", 1, "numeric",
-    "version", "v", 0, "character"
-), byrow = TRUE, ncol = 4)
-opt <- getopt(spec)
+# Add command line arguments
+p <- add_argument(p, "--input", short = "-i", help = "Gene with associated value", type = "character")
+p <- add_argument(p, "--goAnnotation", short = "-a", help = "goAnnotation file", type = "character")
+p <- add_argument(p, "--goDatabase", short = "-g", help = "goDatabase (go.obo) file", type = "character")
+p <- add_argument(p, "--goDivision", short = "-d", help = "goDivision", type = "character")
+p <- add_argument(p, "--largest", short = "-l", help = "Keep GO terms that contain less than this fraction of genes",
+                  type = "numeric", default = 0.1)
+p <- add_argument(p, "--smallest", short = "-s", help = "Smallest number of genes in GO category to considered",
+                  type = "numeric", default = 5)
+p <- add_argument(p, "--absValue", short = "-b", help = "absValue", type = "numeric")
+p <- add_argument(p, "--clusterheight", short = "-c", help = "Cluster height", type = "numeric", default = 0.25)
+p <- add_argument(p, "--textsize", short = "-e", help = "Text size in Graph", type = "numeric", default = 1.0)
+p <- add_argument(p, "--pcut", short = "-p", help = "pcut", type = "numeric", default = 1e-2)
+p <- add_argument(p, "--hcut", short = "-t", help = "hcut", type = "numeric", default = 0.9)
+p <- add_argument(p, "--l1", help = "First level for graph", type = "numeric", default = 0.1)
+p <- add_argument(p, "--l2", help = "Second level for graph", type = "numeric", default = 0.05)
+p <- add_argument(p, "--l3", help = "Third level for graph", type = "numeric", default = 0.01)
+p <- add_argument(p, "--outGraph", short = "-o", help = "Graph output filename",
+                  type = "numeric", default = "Rplots.png")
+p <- add_argument(p, "--version", short = "-v", help = "Version", type = "logical", flag = TRUE)
 
-# if help was asked for print a friendly message
-# and exit with a non-zero error code
-if (!is.null(opt$help)) {
-    cat(getopt(spec, usage = TRUE))
+# Parse the command line arguments
+argv <- parse_args(p)
+
+# if help was asked then print a friendly message
+and exit with a non-zero error code
+if (argv$help) {
+    print(p)
     q(status = 1)
 }
 
-if (!is.null(opt$version)) {
+if (argv$version) {
     cat("0.3.0\n")
     q(status = 1)
 }
@@ -87,72 +91,23 @@ scriptdir <- getScriptPath()
 
 ### if running in Rstudio ###
 # Uncomment this block, change the values and run from here.
-# opt = list()
-# opt$input = "heats.csv"
-# opt$goAnnotations = "amil_defog_iso2go.tab"
-# opt$goDatabase = "go.obo"
-# opt$goDivision = "BP"
+# argv = list()
+# argv$input = "heats.csv"
+# argv$goAnnotation = "amil_defog_iso2go.tab"
+# argv$goDatabase = "go.obo"
+# argv$goDivision = "BP"
 
-### Optionally uncomment the options below that you want to change and change the default value.
-# opt$clusterheight <- 0.25
-# opt$textsize <- 1.2
-# opt$largest <- 0.1
-# opt$smallest <- 5
-# opt$absValue <- -log(0.05,10)
-# opt$l1 <- 0.1
-# opt$l2 <- 0.05
-# opt$l3 <- 0.01
-# opt$pcut <- 1e-2
-# opt$hcut <- 0.9
-
-
-# enforce the following required arguments
-if (is.null(opt$input)) {
-    cat("'input' is required\n")
-    q(status = 1)
-}
-if (is.null(opt$goDatabase)) {
-    cat("'goDatabase' is required\n")
-    q(status = 1)
-}
-if (is.null(opt$goAnnotations)) {
-    cat("'goAnnotations' is required\n")
-    q(status = 1)
-}
-if (is.null(opt$goDivision)) {
-    cat("'goDivision' is required\n")
-    q(status = 1)
-}
-if (is.null(opt$clusterheight)) {
-    opt$clusterheight <- 0.25
-}
-if (is.null(opt$textsize)) {
-    opt$textsize <- 1.2
-}
-if (is.null(opt$largest)) {
-    opt$largest <- 0.1
-}
-if (is.null(opt$smallest)) {
-    opt$smallest <- 5
-}
-if (is.null(opt$absValue)) {
-    opt$absValue <- -log(0.05, 10)
-}
-if (is.null(opt$l1)) {
-    opt$l1 <- 0.1
-}
-if (is.null(opt$l2)) {
-    opt$l2 <- 0.05
-}
-if (is.null(opt$l3)) {
-    opt$l3 <- 0.01
-}
-if (is.null(opt$pcut)) {
-    opt$pcut <- 1e-2
-}
-if (is.null(opt$hcut)) {
-    opt$hcut <- 0.9
-}
+### optionally uncomment the options below that you want to change and change the default value.
+# argv$clusterheight <- 0.25
+# argv$textsize <- 1.2
+# argv$largest <- 0.1
+# argv$smallest <- 5
+# argv$absValue <- -log(0.05,10)
+# argv$l1 <- 0.1
+# argv$l2 <- 0.05
+# argv$l3 <- 0.01
+# argv$pcut <- 1e-2
+# argv$hcut <- 0.9
 
 source_local <- function(fname) {
     # argv <- commandArgs(trailingOnly = FALSE)
@@ -164,7 +119,7 @@ source_local <- function(fname) {
 source_local("gomwu.functions.R")
 
 
-nn <- strsplit(opt$input, "[/.]")
+nn <- strsplit(argv$input, "[/.]")
 if (length(nn[[1]]) == 3) {
     dir <- nn[[1]][1]
     name <- nn[[1]][2]
@@ -179,13 +134,13 @@ if (length(nn[[1]]) == 3) {
 # change any of the numeric values below, delete the files that were generated
 # in previos runs first.
 
-gomwuStats(opt$input, opt$goDatabase, opt$goAnnotations, opt$goDivision, scriptdir,
+gomwuStats(argv$input, argv$goDatabase, argv$goAnnotation, argv$goDivision, scriptdir,
     # replace with full path to perl executable if it is not in your system's PATH already
     perlPath = "perl",
     # a GO category will not be considered if it contains more than this fraction of the total number of genes
-    largest = opt$largest,
-    smallest = opt$smallest, # a GO category should contain at least this many genes to be considered.
-    clusterCutHeight = opt$clusterheight, # threshold for merging similar (gene-sharing) terms. See README for details.
+    largest = argv$largest,
+    smallest = argv$smallest, # a GO category should contain at least this many genes to be considered.
+    clusterCutHeight = argv$clusterheight, # threshold for merging similar (gene-sharing) terms. See README for details.
     # Alternative = "g" # by default the MWU test is two-tailed;
     # specify "g" or "l" of you want to test for "greater" or "less" instead.
     # Module = TRUE,Alternative="g" # un-remark this if you are analyzing a
@@ -199,29 +154,27 @@ gomwuStats(opt$input, opt$goDatabase, opt$goAnnotations, opt$goDivision, scriptd
 # ----------- Plotting results
 
 # change this to a pdf output
-pdf(paste0(dir, "/", "Rplots.pdf"), width = 7, height = 7)
+png(paste0(dir, "/", argv$outGraph), width = 6, height = 8, units = "in", res = 300)
 # png(paste0(dir,"/","Rplots.png"),res=100)
 
-results <- gomwuPlot(opt$input, opt$goAnnotations, opt$goDivision,
+results <- gomwuPlot(argv$input, argv$goAnnotation, argv$goDivision,
     # genes with the measure value exceeding this will be counted as "good genes".
     # This setting is for signed log-pvalues. Specify absValue=0.001 if you are doing
     # Fisher's exact test for standard GO enrichment or analyzing a WGCNA module (all non-zero genes = "good genes").
-    absValue = opt$absValue,
+    absValue = argv$absValue,
     # 	absValue = 1, # un-remark this if you are using log2-fold changes
     # FDR threshold for plotting. Specify level1=1 to plot all GO categories containing genes exceeding the absValue.
-    level1 = opt$l1,
-    level2 = opt$l2, # FDR cutoff to print in regular (not italic) font.
-    level3 = opt$l3, # FDR cutoff to print in large bold font.
+    level1 = argv$l1,
+    level2 = argv$l2, # FDR cutoff to print in regular (not italic) font.
+    level3 = argv$l3, # FDR cutoff to print in large bold font.
     # decrease to fit more on one page, or increase (after rescaling the plot so the tree fits the text)
     # for better "word cloud" effect
-    txtsize = opt$textsize,
+    txtsize = argv$textsize,
     treeHeight = 0.5, # height of the hierarchical clustering tree
     # 	colors = c("dodgerblue2","firebrick1","skyblue2","lightcoral")
     # these are default colors, uncomment and change if needed
 )
 dev.off()
-# manually rescale the plot so the tree matches the text
-# if there are too many categories displayed, try make it more stringent with level1 = 0.05,level2=0.01,level3=0.001.
 
 # text representation of results, with actual adjusted p-values
 write.table(results[[1]], paste0(dir, "/", "results.tsv"), sep = "\t")
@@ -231,8 +184,8 @@ write.table(results[[1]], paste0(dir, "/", "results.tsv"), sep = "\t")
 
 # this module chooses GO terms that best represent *independent* groups of significant GO terms
 
-pcut <- opt$pcut
-hcut <- opt$hcut
+pcut <- argv$pcut
+hcut <- argv$hcut
 
 # plotting the GO tree with the cut level (uncomment the next two lines to plot)
 # plot(results[[2]],cex = 0.6)
@@ -268,6 +221,6 @@ for (ci in unique(ct)) {
     }
 }
 
-mwus <- read.table(paste0(dir, "/", paste("MWU", opt$goDivision, name, sep = "_"), ".", ext), header = T)
+mwus <- read.table(paste0(dir, "/", paste("MWU", argv$goDivision, name, sep = "_"), ".", ext), header = T)
 best_GOs <- mwus[mwus$name %in% annots, ]
 write.table(best_GOs, paste0(dir, "/", "best_go.tsv"), sep = "\t", row.names = FALSE)
