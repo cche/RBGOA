@@ -17,6 +17,12 @@ clusteringGOs <- function(gen2go, div, cutHeight) {
         row.names(diss) <- names(diss)
         hc <- hclust(as.dist(diss), method = "complete")
         cc <- cutree(hc, h = cutHeight)
+        ccnames <- names(cc)
+        if (cutHeight == 0) {
+         print("no clustering of GO terms will be done")
+          cc <- seq(1:length(cc))
+          names(cc) <- ccnames
+        }
         write.csv(cc, file = outname, quote = F)
     }
 }
