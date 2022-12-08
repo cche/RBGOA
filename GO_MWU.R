@@ -76,7 +76,7 @@ p <- add_argument(p, "--version", short = "-v", help = "Version", type = "logica
 argv <- parse_args(p)
 
 # if help was asked then print a friendly message
-and exit with a non-zero error code
+# and exit with a non-zero error code
 if (argv$help) {
     print(p)
     q(status = 1)
@@ -109,9 +109,9 @@ scriptdir <- getScriptPath()
 # argv$pcut <- 1e-2
 # argv$hcut <- 0.9
 
+
 source_local <- function(fname) {
     # argv <- commandArgs(trailingOnly = FALSE)
-    # base_dir <- dirname(substring(argv[grep("--file = ", argv)], 8))
     base_dir <- scriptdir
     source(paste(base_dir, fname, sep = "/"))
 }
@@ -221,6 +221,6 @@ for (ci in unique(ct)) {
     }
 }
 
-mwus <- read.table(paste0(dir, "/", paste("MWU", argv$goDivision, name, sep = "_"), ".", ext), header = T)
+mwus <- read.table(paste0(dir, "/", paste("MWU", argv$goDivision, name, sep = "_"), ".", ext), header = TRUE)
 best_GOs <- mwus[mwus$name %in% annots, ]
 write.table(best_GOs, paste0(dir, "/", "best_go.tsv"), sep = "\t", row.names = FALSE)
